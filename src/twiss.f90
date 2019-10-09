@@ -509,7 +509,12 @@ SUBROUTINE twfill_ripken(opt_fun)
 
 end SUBROUTINE twfill_ripken
 
+MODULE tmclor_utils
+    integer :: n_calls_tmclor = 0
+END MODULE tmclor_utils
+
 SUBROUTINE tmclor(guess,fsec,ftrk,opt_fun0,rt,tt,eflag)
+  use tmclor_utils, only : n_calls_tmclor
   use twissbeamfi, only : deltap
   use matrices, only : EYE
   use math_constfi, only : zero, one
@@ -544,6 +549,11 @@ SUBROUTINE tmclor(guess,fsec,ftrk,opt_fun0,rt,tt,eflag)
   logical, external :: m66sta
   integer, parameter :: itmax=20
 
+  integer :: outfile
+  character(len=26) :: filename
+
+  n_calls_tmclor = n_calls_tmclor + 1
+
   deltap = get_value('probe ','deltap ')
 
   !---- Initialize.
@@ -561,6 +571,16 @@ SUBROUTINE tmclor(guess,fsec,ftrk,opt_fun0,rt,tt,eflag)
 
      !---- Track orbit and transfer matrix.
      call tmfrst(orbit0,orbit,fsec,ftrk,rt,tt,eflag,0,0,thr_on)
+
+     write (filename, '(a,I3.3,a,I3.3,a)') '/tmp/madx/tmclor/', n_calls_tmclor, '_', itra, '_R'
+     open(newunit=outfile, file=filename, form="unformatted")
+     write(outfile) rt
+     close(outfile)
+
+     write (filename, '(a,I3.3,a,I3.3,a)') '/tmp/madx/tmclor/', n_calls_tmclor, '_', itra, '_T'
+     open(newunit=outfile, file=filename, form="unformatted")
+     write(outfile) tt
+     close(outfile)
 
      if (eflag.ne.0) return
      ! turn off threader immediately after first iteration, ie after first turn
