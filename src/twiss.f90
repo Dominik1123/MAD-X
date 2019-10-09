@@ -3683,6 +3683,8 @@ SUBROUTINE tmsect(fsec,el,h,dh,sk1,sk2,ek,re,te)
   double precision, parameter :: cg0=one/twty, cg1=5d0/840d0, cg2=21d0/60480d0
   double precision, parameter :: ch0=one/fvty6, ch1=14d0/4032d0, ch2=147d0/443520d0
 
+  integer, external :: get_option
+
   !---- Initialize.
   EK = zero
   RE = EYE
@@ -3698,7 +3700,10 @@ SUBROUTINE tmsect(fsec,el,h,dh,sk1,sk2,ek,re,te)
   xkl = xk * el
   xklsq = xksq * el**2
 
-  if (abs(xklsq) .lt. 1e-2) then
+  if ((get_option('use_series_sbend ') .ne. 0) .or. (abs(xklsq) .eq. 0d0)) then
+     if (abs(xklsq) .ge. 1e-2) then
+        call fort_fail('[tmsect, xklsq] ', 'original condition for usage of series expansion is not met')
+     end if
      cx = (c1 - xklsq * (c2 - xklsq*c3))
      sx = (s1 - xklsq * (s2 - xklsq*s3)) * el
      dx = (c2 - xklsq * (c3 - xklsq*c4)) * el**2
@@ -3739,7 +3744,10 @@ SUBROUTINE tmsect(fsec,el,h,dh,sk1,sk2,ek,re,te)
   ykl = yk*el
   yklsq = yksq*el**2
 
-  if (abs(yklsq) .lt. 1e-2) then
+  if ((get_option('use_series_sbend ') .ne. 0) .or. (abs(yklsq) .eq. 0d0)) then
+     if (abs(yklsq) .ge. 1e-2) then
+        call fort_fail('[tmsect, yklsq] ', 'original condition for usage of series expansion is not met')
+     end if
      cy = (c1 - yklsq * (c2 - yklsq*c3))
      sy = (s1 - yklsq * (s2 - yklsq*s3)) * el
   else if (yklsq .gt. zero) then
@@ -3803,7 +3811,10 @@ SUBROUTINE tmsect(fsec,el,h,dh,sk1,sk2,ek,re,te)
      call tmfoc(el,y2ksq,cyy,syy,dyy,fyy)
      y2klsq = y2ksq * el**2
 
-     if (max(abs(y2klsq),abs(xklsq)) .le. 1e-2) then
+     if ((get_option('use_series_sbend ') .ne. 0) .or. (max(abs(y2klsq), abs(xklsq)) .eq. 0d0)) then
+        if (max(abs(y2klsq), abs(xklsq)) .gt. 1e-2) then
+           call fort_fail('[tmsect, max(abs(y2klsq), abs(xklsq))] ', 'original condition for usage of series expansion is not met')
+        end if
         y0 = one
         y1 = xklsq + y2klsq
         y2 = xklsq**2 + xklsq*y2klsq + y2klsq**2
@@ -5108,10 +5119,15 @@ SUBROUTINE qdbody(fsec,ftrk,tilt,sk1,orbit,el,ek,re,te)
   double precision :: qk, qkl, qkl2
   double precision :: cx, sx, cy, sy, biby4
 
+  integer, external :: get_option
+
   !---- Set up c's and s's.
   qk = sqrt(abs(sk1))
   qkl = qk * el
-  if (abs(qkl) .lt. ten3m) then
+  if ((get_option('use_series_quad ') .ne. 0) .or. (abs(qkl) .eq. 0d0)) then
+     if (abs(qkl) .ge. ten3m) then
+        call fort_fail('[qdbody, qkl] ', 'original condition for usage of series expansion is not met')
+     end if
      qkl2 = sk1 * el**2
      cx = (one - qkl2 / two)
      sx = (one - qkl2 / six) * el
@@ -8169,11 +8185,16 @@ subroutine tmfoc(el,sk1,c,s,d,f)
 
   double precision, parameter :: twty=20d0, thty=30d0, foty2=42d0
 
+  integer, external :: get_option
+
   qk = sqrt(abs(sk1))
   qkl = qk * el
   qkl2 = sk1 * el**2
 
-  if (abs(qkl2) .le. 1e-2) then
+  if ((get_option('use_series_sbend ') .ne. 0) .or. (abs(qkl2) .eq. 0d0)) then
+     if (abs(qkl2) .gt. 1e-2) then
+        call fort_fail('[tmfoc, qkl2] ', 'original condition for usage of series expansion is not met')
+     end if
      c = (one - qkl2 * (one - qkl2 / twelve) /  two)
      s = (one - qkl2 * (one - qkl2 / twty) /  six) * el
      d = (one - qkl2 * (one - qkl2 / thty) / twelve) * el**2 / two

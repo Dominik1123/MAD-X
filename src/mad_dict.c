@@ -270,6 +270,8 @@ const char *const_command_def =
 "dummy    = [s, 0]; "
 " "
 "option: control none 0 0 "
+"use_series_sbend = [l, false, true], "
+"use_series_quad = [l, false, true], "
 "echo       = [l, true, true], "
 "echomacro  = [l, false, true], " /* ld */
 "echosystem = [l, false, true], " /* ld */
