@@ -2699,7 +2699,7 @@ subroutine tt_putone(npart,turn,tot_segm,segment,part_id,z,orbit0,&
     ss = -1.0
     call double_to_table_curr(table, 'number ', ss)
     do j = 1, 6
-    tmp = 0
+      tmp = 0
       do i = 1, npart
         tmp = tmp + (z(j,i) - orbit0(j))
       enddo
