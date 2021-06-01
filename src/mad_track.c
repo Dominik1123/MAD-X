@@ -397,7 +397,8 @@ track_tables_create(struct in_cmd* cmd)
     }
     else {
       t = make_table("trackone", "trackone", trackone_table_cols,
-                     trackone_table_types, stored_track_start->curr*t_size);
+                     trackone_table_types,
+                     (get_option("only_average") ? 1 : stored_track_start->curr)*t_size);
       add_to_table_list(t, table_register);
     }
   }
