@@ -2684,6 +2684,7 @@ subroutine tt_putone(npart,turn,tot_segm,segment,part_id,z,orbit0,&
   logical :: onlyaver
   integer :: i, j, length
   double precision :: tmp, tt, ss, spos, tmp_v(6)
+  double precision :: tmp_pos, tmp_square, tmp_std(6)
   character(len=120) :: table = 'trackone', comment
   character(len=4) :: vec_names(7)
   data vec_names / 'x', 'px', 'y', 'py', 't', 'pt','s' /
@@ -2700,12 +2701,25 @@ subroutine tt_putone(npart,turn,tot_segm,segment,part_id,z,orbit0,&
     call double_to_table_curr(table, 'number ', ss)
     do j = 1, 6
       tmp = 0
+      tmp_square = 0
       do i = 1, npart
-        tmp = tmp + (z(j,i) - orbit0(j))
+        tmp_pos = (z(j,i) - orbit0(j))
+        tmp = tmp + tmp_pos
+        tmp_square = tmp_square + tmp_pos**2
       enddo
+      tmp_std(j) = sqrt(tmp_square/npart - (tmp/npart)**2)  ! might suffer from catastrophic cancellation
       call double_to_table_curr(table, vec_names(j), tmp/npart)
     enddo
     
+    call double_to_table_curr(table,vec_names(7),spos)
+    call augment_count(table)
+
+    call double_to_table_curr(table, 'turn ', tt)
+    ss = -2.0
+    call double_to_table_curr(table, 'number ', ss)
+    do j = 1, 6
+      call double_to_table_curr(table, vec_names(j), tmp_std(j))
+    enddo
     call double_to_table_curr(table,vec_names(7),spos)
     call augment_count(table)
   else
